@@ -29,3 +29,17 @@ dependencies {
   implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
   implementation 'androidx.viewpager2:viewpager2:1.0.0'
 }
+
+afterEvaluate {
+  publishing {
+    publications {
+      release(MavenPublication) {
+        from components.release
+      }
+
+      debug(MavenPublication) {
+        from components.debug
+      }
+    }
+  }
+}
