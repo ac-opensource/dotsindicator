@@ -2,6 +2,7 @@ package com.tbuonomo.viewpagerdotsindicator
 
 import android.animation.ArgbEvaluator
 import android.content.Context
+import android.graphics.drawable.GradientDrawable
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.util.AttributeSet
@@ -12,17 +13,23 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import com.tbuonomo.viewpagerdotsindicator.BaseDotsIndicator.Type.DEFAULT
 
-class DotsIndicator @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null,
-        defStyleAttr: Int = 0) : BaseDotsIndicator(context, attrs, defStyleAttr) {
+class StrokeDotsIndicator @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null,
+                                                    defStyleAttr: Int = 0) : BaseDotsIndicator(context, attrs, defStyleAttr) {
 
   companion object {
     const val DEFAULT_WIDTH_FACTOR = 2.5f
   }
 
   private lateinit var linearLayout: LinearLayout
+
   private var dotsWidthFactor: Float = 0f
   private var progressMode: Boolean = false
   private var dotsElevation: Float = 0f
+
+  // Attributes
+  private var dotIndicatorColor: Int = 0
+  private var dotsStrokeWidth: Int = 0
+  private var dotsStrokeColor: Int = 0
 
   var selectedDotColor: Int = 0
     set(value) {
@@ -47,6 +54,12 @@ class DotsIndicator @JvmOverloads constructor(context: Context, attrs: Attribute
       val a = context.obtainStyledAttributes(attrs, R.styleable.DotsIndicator)
 
       selectedDotColor = a.getColor(R.styleable.DotsIndicator_selectedDotColor, DEFAULT_POINT_COLOR)
+      dotIndicatorColor = a.getColor(R.styleable.DotsIndicator_dotsColor, dotIndicatorColor)
+      dotsStrokeColor = a.getColor(R.styleable.DotsIndicator_dotsStrokeColor, dotIndicatorColor)
+
+      // Spring dots attributes
+      dotsStrokeWidth = a.getDimension(R.styleable.DotsIndicator_dotsStrokeWidth,
+        dotsStrokeWidth.toFloat()).toInt()
 
       dotsWidthFactor = a.getFloat(R.styleable.DotsIndicator_dotsWidthFactor, 2.5f)
       if (dotsWidthFactor < 1) {
@@ -64,11 +77,11 @@ class DotsIndicator @JvmOverloads constructor(context: Context, attrs: Attribute
       addDots(5)
       refreshDots()
     }
-
   }
 
+
   override fun addDot(index: Int) {
-    val dot = LayoutInflater.from(context).inflate(R.layout.dot_layout, this, false)
+    val dot = LayoutInflater.from(context).inflate(R.layout.dot_stroke_layout, this, false)
     val imageView = dot.findViewById<ImageView>(R.id.dot)
     val params = imageView.layoutParams as LayoutParams
 
@@ -160,6 +173,9 @@ class DotsIndicator @JvmOverloads constructor(context: Context, attrs: Attribute
     val background = elevationItem.background as? DotsGradientDrawable?
 
     background?.let {
+      if (dotsStrokeWidth != 0) {
+        background.setStroke(dotsStrokeWidth, dotsStrokeColor)
+      }
       if (index == pager!!.currentItem || progressMode && index < pager!!.currentItem) {
         background.setColor(selectedDotColor)
       } else {
@@ -167,7 +183,6 @@ class DotsIndicator @JvmOverloads constructor(context: Context, attrs: Attribute
       }
     }
 
-    elevationItem.setBackgroundDrawable(background)
     elevationItem.invalidate()
   }
 
